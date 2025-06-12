@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="dev.mvc.ip.IpDAOInter">
+
+ <!-- JOIN_IP 레코드 INSERT -->
+  <insert id="create" parameterType="dev.mvc.ip.IpVO">
+INSERT INTO JOIN_IP ( ip_id, ip_address, ip_country_name, ip_country_code,
+                             ip_region_name, ip_region_code, ip_city_name, ip_isp,
+                             ip_rdate, ip_mdate) 
+                 VALUES ( join_ip_seq.NEXTVAL, #{ip_address}, #{ip_country_name}, #{ip_country_code},
+                             #{ip_region_name}, #{ip_region_code}, #{ip_city_name}, #{ip_isp},
+                             SYSDATE, SYSDATE)
+  </insert>
+  
+  
+  
+       
+</mapper>
+
+

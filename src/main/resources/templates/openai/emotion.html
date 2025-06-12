@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout}"> <!-- layout.html 상속-->
+<div layout:fragment="content">
+
+  <script>
+    // window.onload = function() {
+    window.onload = () => {
+      let article_tag = document.getElementById('article');
+      let send_tag = document.getElementById('send');
+      let clear_tag = document.getElementById('clear');
+      let result_animation_tag = document.getElementById('result_animation');
+      let result_tag = document.getElementById('result');
+
+      // async: 비동기 통신, 일단 요청을 하고 응답이 즉시 안와도 에러가 발생 안됨, 응답이 오면 그때 이어서 처리. 
+      send_tag.addEventListener("click", async function() {
+        let article = article_tag.value;
+        console.log(article);
+        result_tag.style.display='none';
+
+        fetch("/openai/emotion", {
+          "method": "post", 
+          "headers": {"Content-Type": "application/json"},
+          body: JSON.stringify({article}) // {"article": article}
+        })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data['res']);
+          result_animation_tag.style.display = 'none';
+          result_tag.style.display='block'; // none: 감춤
+          
+          if(data['res'] == 0) {
+            result_tag.value = "긍정";
+          }
+          else if (data['res'] == 1) {
+            result_tag.value = "부정";
+          }
+          else {
+            result_tag.value = "오류";
+          }
+        });
+
+        result_animation_tag.innerHTML = '<img src="/images/progress.gif" style="width: 5%; margin-top: 0px;">';
+        result_animation_tag.style.display='block';
+      });
+
+      clear_tag.addEventListener("click", function() {
+        article_tag.value='';
+        article_tag.focus();
+
+      })
+    }
+  </script>
+
+<body>
+  <div style="margin: 10px auto; width: 90%;">
+    <h3>감정 분석</h3>
+    <textarea id="article" name="article" style="width: 100%; height: 500px;">
+      오늘은 정말 최악의 하루였어. 지각하고, 상사에게 혼나고, 휴대폰까지 잃어버렸어.
+    </textarea>  <br />
+  
+    <button id="send" class="btn btn-primary btn-sm">분석 하기</button> 
+    <button id="clear" class="btn btn-primary btn-sm">내용 삭제하기</button> <br />
+    <div id="result_animation" style="margin-top: 10px; width: 100%; height: 50px; text-align: center; display: none;"></div>
+    <textarea id="result" style="margin-top: 10px; width: 100%; height: 50px; display: none;"></textarea>
+
+  </div>
+
+</body>
+</html>

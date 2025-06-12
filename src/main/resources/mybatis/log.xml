@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="dev.mvc.log.LogDAOInter"> <!-- SB가 자동으로 구현하여 연동하는 interface -->
+
+  <insert id="LoggedIn2" parameterType="dev.mvc.log.LoginLogVO">
+    INSERT INTO user_login_log(login_log_id,              memberno,    login_ip,    login_log_date, logout_log_date)
+    VALUES (                        login_log_seq.nextval,  #{memberno}, #{login_ip}, SYSDATE,        #{logout_log_date})
+  </insert>
+  
+  <insert id="LoggedIn" parameterType="dev.mvc.log.LoginLogVO" useGeneratedKeys="true" keyProperty="login_log_id">
+  
+  
+    <!-- 조회 후 LoginLogVO에 login_log_id를 저장하는 것이 핵심인것같다 -->
+    <selectKey keyProperty="login_log_id" resultType="int" order="BEFORE">
+      SELECT login_log_seq.nextval FROM dual
+    </selectKey>
+
+    INSERT INTO user_login_log (
+      login_log_id,
+      memberno,
+      login_ip,
+      login_log_date
+    ) VALUES (
+      #{login_log_id},
+      #{memberno},
+      #{login_ip},
+      SYSDATE
+    )
+   </insert>
+  
+  <update id="LoggedOut" parameterType="Integer">
+    UPDATE user_login_log 
+    SET logout_log_date = SYSDATE
+    WHERE login_log_id = #{login_log_id}
+  </update>
+  
+  <select id="login_log_id_read" resultType="Integer">
+    SELECT login_log_id
+    FROM user_login_log
+    WHERE memberno = #{memberno}
+  </select>
+
+
+</mapper>

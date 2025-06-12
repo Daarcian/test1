@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>음성 녹음</title>
+</head>
+<body>
+  <h2>음성 녹음</h2>
+  <button id="startBtn">녹음 시작</button>
+  <button id="stopBtn">녹음 정지</button>
+  <audio id="audioPlayer" controls></audio>
+
+  <script>
+    let mediaRecorder;
+    let audioChunks = [];
+
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const audioPlayer = document.getElementById("audioPlayer");
+
+    startBtn.onclick = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+
+      mediaRecorder.ondataavailable = event => {
+        audioChunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        audioPlayer.src = audioUrl;
+
+        // 서버로 전송
+        const formData = new FormData();
+        formData.append("file", audioBlob, "recording.webm");
+
+        fetch("/upload", {
+          method: "POST",
+          body: formData
+        }).then(res => {
+          if (res.ok) alert("업로드 성공!");
+          else alert("업로드 실패");
+        });
+
+        audioChunks = [];
+      };
+
+      mediaRecorder.start();
+    };
+
+    stopBtn.onclick = () => {
+      mediaRecorder.stop();
+    };
+  </script>
+</body>
+</html>

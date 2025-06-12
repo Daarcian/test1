@@ -1,0 +1,100 @@
+
+<script>
+
+  window.onload = () => {
+
+    if ("webkitSpeechRecognition" in window) {
+    // webkitSpeechRecognition 인스턴스
+    console.log("working");
+
+
+    let speechRecognition = new webkitSpeechRecognition();
+
+    // Final transcription은 여기에 담아질 예정
+    let finalTranscript = "";
+
+    
+    speechRecognition.continuous = true; // Stop 버튼을 클릭하기 전 까지 지속적으로 들을 예정
+    speechRecognition.interimResults = true; // InterimResults 테스트 결과를 보여주려고 True로 설정했습니다.
+
+    // Callback Function for the onStart Event
+    speechRecognition.onstart = () => {
+      document.querySelector("#status").innerHTML = 'START'
+    };
+    speechRecognition.onerror = () => {
+      document.querySelector("#status").innerHTML = 'ERROR'
+    };
+    speechRecognition.onend = () => {
+      document.querySelector("#status").innerHTML = 'WAITING'
+    };
+
+    speechRecognition.onresult = (event) => {
+      let interimTranscript = "";
+
+      // Loop through the results from the speech recognition object.
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        // Result는 2차원 배열로 되어있습니다.
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
+        }
+      }
+
+      // 데이터를 변경해줍니다.
+      document.querySelector("#final").innerHTML = finalTranscript;
+      document.querySelector("#interim").innerHTML = interimTranscript;
+    };
+
+    // Start button click event handler
+    document.querySelector("#start-btn").onclick = () => {
+      // Start the Speech Recognition
+      speechRecognition.start();
+    };
+    // Stop button click event handler
+    document.querySelector("#stop-btn").onclick = () => {
+      // Stop the Speech Recognition
+      speechRecognition.stop();
+    };
+  } else {
+    console.log("Speech Recognition Not Available");
+  }
+
+  }
+</script>
+
+
+<div class="font-sans ">
+  <div class="flex">
+    <div>
+      Status:
+    </div>
+    <div id="status">
+      WAITING
+    </div>
+  </div>
+  <div class="border py-2">
+    <div class="flex">
+      <div>
+        Final:
+      </div>
+      <div id="final">
+      </div>
+    </div>
+    <div class="flex">
+      <div>
+        interim:
+      </div>
+      <div id="interim">
+      </div>
+    </div>
+  </div>
+  <div>
+    <button id="start-btn">
+      Start
+    </button>
+    <button id="stop-btn">
+      Stop
+    </button>
+  </div>
+</div>

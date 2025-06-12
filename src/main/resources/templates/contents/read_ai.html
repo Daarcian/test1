@@ -1,0 +1,409 @@
+<!DOCTYPE html> 
+
+<html layout:decorate="~{layout}"> <!-- layout.html 상속-->
+<div layout:fragment="content">
+  <script>
+    window.onload = function() {
+      // <img src="/contents/images/hart_off_50.png" style="width: 22px" title="추천">          
+      // <img src="/contents/images/hart_on_50.png" style="width: 22px" title="비추천">   
+      // 현재 로그인한 사용자의 추천 여부 반영
+
+      let hartCnt = '[[${hartCnt}]]'; //  javascript -> Thymeleaf
+      let tag='';
+      
+      if (hartCnt == 1) { // 현재 로그인한 회원이 추천한 경우
+        tag = '<a href="javascript:good([[${contentsVO.contentsno}]])"><img src="/contents/images/hart_on_50.png" style="width: 22px" title="추천"></a>';
+        document.querySelector('#hart_panel').innerHTML = tag; 
+      } else { // 현재 로그인한 회원이 추천하지 않은 경우, guest
+        tag = '<a href="javascript:good([[${contentsVO.contentsno}]])"><img src="/contents/images/hart_off_50.png" style="width: 22px" title="추천"></a>';
+        document.querySelector('#hart_panel').innerHTML = tag; 
+      }    
+      
+      document.querySelector('#recom_panel').innerHTML = '([[${contentsVO.recom}]])';
+    }
+
+    function good(contentsno) {
+      console.log('-> contentsno: ' + contentsno);
+
+      fetch("/contents/good", {
+          "method": "post",
+          "headers": {
+              "Content-Type": "application/json"
+          },
+          body: JSON.stringify({contentsno}) // {"contentsno":contentsno}, JSON 형식으로 전송
+        })
+        .then((response) => response.json()) // 응답 문자열 추출
+        .then((data) => {
+          console.log('-> data.isMember: ' + data.isMember);
+
+          if (data.isMember == 1) { // 회원
+            let hartCnt =data.hartCnt; //  javascript -> Thymeleaf -> session
+            let tag='';
+            
+            if (hartCnt == 1) {
+              tag = '<a href="javascript:good([[${contentsVO.contentsno}]])"><img src="/contents/images/hart_on_50.png" style="width: 22px" title="추천"></a>';
+              document.querySelector('#hart_panel').innerHTML = tag; 
+            } else {
+              tag = '<a href="javascript:good([[${contentsVO.contentsno}]])"><img src="/contents/images/hart_off_50.png" style="width: 22px" title="추천"></a>';
+              document.querySelector('#hart_panel').innerHTML = tag; 
+            }    
+            
+            document.querySelector('#recom_panel').innerHTML = '(' + data.recom + ')';
+          
+          } else { // 비회원
+            alert("로그인해야 추천 할 수 있습니다.");
+            location.href='/member/login_cookie_need';  
+
+          }
+        }
+      );
+    }
+  </script>
+  <div class='title_line'>
+    <span th:text="${cateVO.grp }" class="title_line_text"></span > 
+    > <span th:text="${cateVO.name}" class="title_line_text"></span > 
+    > 글 조회
+  </div>
+  
+  <aside class="aside_right" th:if="${session.grade == 'admin'}">
+    <a href="javascript:location.reload();">새로고침</a>
+    <span class='menu_divide' >│</span>    
+    <a th:href="@{|./list_by_cateno?cateno=${cateVO.cateno }&word=${word }&now_page=${now_page}|}">목록형</a>    
+    <span class='menu_divide' >│</span>
+    <a th:href="@{|./list_by_cateno_grid?cateno=${cateVO.cateno }&word=${word }&now_page=${now_page}|}">갤러리형</a>
+    <span class='menu_divide' >│</span>
+    <a href="./create?cateno=${cateno }">등록</a>
+    <span class='menu_divide' >│</span>
+    <a th:href="@{|/contents/update_text?contentsno=${contentsVO.contentsno}&now_page=${now_page}&word=${word }|}">글 수정</a>
+    <span class='menu_divide' >│</span>
+    <a th:href="@{|./update_file?contentsno=${contentsVO.contentsno}&word=${word}&now_page=${now_page}|}">파일 수정</a>  
+    <span class='menu_divide' >│</span>
+    <a th:href="@{|/contents/map?cateno=${contentsVO.cateno }&contentsno=${contentsVO.contentsno}|}">지도</a>
+    <span class='menu_divide' >│</span>
+    <a th:href="@{|/contents/youtube?cateno=${contentsVO.cateno }&contentsno=${contentsVO.contentsno}&word=${word}&now_page=${now_page}|}">Youtube</a>
+    <span class='menu_divide' >│</span>
+    <a th:href="@{|./delete?contentsno=${contentsVO.contentsno}&word=${word}&now_page=${now_page}&cateno=${contentsVO.cateno}|}">삭제</a>  
+ </aside> 
+
+  <aside class="aside_right" th:if="${session.grade != 'admin'}">
+     <a href="javascript:location.reload();">새로고침</a>
+    <span class='menu_divide' >│</span>    
+    <a th:href="@{|./list_by_cateno?cateno=${cateVO.cateno }&word=${word }&now_page=${now_page}|}">목록형</a>    
+    <span class='menu_divide' >│</span>
+    <a th:href="@{|./list_by_cateno_grid?cateno=${cateVO.cateno }&word=${word }&now_page=${now_page}|}">갤러리형</a>
+  </aside> 
+ 
+  <div class='menu_line'></div>
+
+  <fieldset class="fieldset_basic">
+    <ul>
+      <li class="li_none">
+        <div style="width: 100%; word-break: break-all;">
+        
+          <div th:if="${contentsVO.file1.endsWith('jpg') or contentsVO.file1.endsWith('png')  or contentsVO.file1.endsWith('gif') or contentsVO.file1.endsWith('jpeg')}">
+            <img th:src="@{|/contents/storage/${contentsVO.file1saved}|}" style='width: 50%; float: left; margin-top: 0.5%; margin-right: 1%;'>
+          </div>
+
+          <span style="font-size: 1.5em; font-weight: bold;" th:text="${contentsVO.title}"></span>
+          <span style="font-size: 1em;" th:text="${contentsVO.rdate }"></span><br><br>
+          
+          <div style="background-color : lavenderblush;">
+            <span th:if="${contentsVO.emotion == '0'}" th:text="|긍정적인 내용입니다|"></span>
+            <span th:if="${contentsVO.emotion == '1'}" th:text="|부정적인 내용입니다|"></span>
+            <div th:text ="${contentsVO.summary}"></div>
+          </div>
+          <br>
+          <div style="white-space: pre-wrap;"><span th:text="${contentsVO.content}"></span></div>
+          
+        </div>
+      </li>
+
+      <li class="li_none" style="clear: both; padding-top: 10px; padding-bottom: 25px;" 
+           th:if="${contentsVO.map.length() > 0}">
+        <div style='text-align: center; width:640px; margin: 0px auto;'
+                th:utext = "${contentsVO.map }">
+        </div>
+      </li>
+
+      <li class="li_none" style="clear: both; padding-top: 10px; padding-bottom: 25px;" 
+          th:if="${contentsVO.youtube.length() > 0}">
+        <div style='text-align: center; width:640px; margin: 0px auto;'
+           th:utext = "${contentsVO.youtube }">
+        </div>
+      </li>
+
+      <li class="li_none" th:text="|검색어(키워드): ${contentsVO.word }|">
+      </li>
+      
+      <li class="li_none" th:if="${contentsVO.size1 > 0}">
+        <div >
+          첨부 파일: <a th:href='@{|/download?dir=contents/storage&filename=${contentsVO.file1saved}&downname=${contentsVO.file1}|}'
+                       th:text='|${contentsVO.file1}|'></a> <span th:text="|(${contentsVO.size1_label})|"></span>  
+                    <a th:href='@{|/download?dir=contents/storage&filename=${contentsVO.file1saved}&downname=${contentsVO.file1}|}'><img src="/contents/images/download.png"></a>
+          <span id="hart_panel"></span><span id="recom_panel"></span>          
+        </div>
+      </li>   
+      
+      <li class="li_none">
+        <!-- ------------------------------ 댓글 영역 시작 ------------------------------ -->
+        <script>
+          let reply_data; // 댓글 500건 저장
+          let reply_now_page=1; // 댓글 현재 페이지
+        </script>
+        
+        <script>
+          window.onload = () => {
+            let content_tag = document.getElementById('content');
+            let btn_create_tag = document.getElementById('btn_create'); // 등록
+            let btn_add_tag = document.getElementById('btn_add'); // 더보기
+            let reply_list_tag = document.getElementById('reply_list'); // 목록 출력 panel
+            
+            let btn_save_tag =document.getElementById("btn_save");      // 수정 저장
+            let replyno_tag =document.getElementById("replyno");         // 수정할 레코드 번호
+            let memberno_tag =document.getElementById("memberno");  // 댓글 작성 회원 번호
+            
+            let btn_delete_tag =document.getElementById("btn_delete"); // 삭제 처리
+            let btn_cancel_tag =document.getElementById("btn_cancel"); // 수정/삭제 취소
+            
+            // 댓글 입력
+            content_tag.addEventListener('click', () => {
+              let id =  '[[${session.id}]]'; //  javascript -> Thymeleaf -> session
+              // alert('Click!: ' + id);
+              if (id == '') {
+                alert('로그인해야 댓글을 입력 할 수 있습니다.');
+                location.href="/member/login?url=/contents/read?contentsno=[[${contentsVO.contentsno}]]%26word=[[${word}]]%26now_page=[[${now_page}]]";
+              } else {
+                // alert('로그인 됨');
+                // content_tag.focus();
+              }
+            });
+            
+            btn_create_tag.addEventListener('click', () => {
+              let content = content_tag.value.trim();
+              
+              if (content.length == 0) {
+                alert('내용이 없습니다. 내용을 입력해주세요.');
+              } else {
+                // alert('content: ' + content_tag.value);
+                // {"sentence":"안녕하세요.","language":"영어","age":"25"}
+                // console.log(JSON.stringify({sentence, language, age}))
+                // return;
+        
+                // CORS 설정시 http://127.0.0.1:9091/reply/create 접근됨.
+                // 다른 session에서 처리됨으로 기존의 로그인 정보 인식 안됨. ★
+                // fetch("http://localhost:9091/reply/create", { 
+                // fetch("http://127.0.0.1:9091/reply/create", {
+                fetch("/reply/create", {
+                // fetch("/reply/create", {
+                  "method": "post", 
+                  "headers": {"Content-Type": "application/json"},
+                  body: JSON.stringify({"contentsno": "[[${contentsVO.contentsno}]]", "content": content})
+                })
+                .then((response) => response.json())
+                .then((data) => {
+                  list_by_contentsno_join(); // 목록 출력
+                  content_tag.value='';
+                  content_tag.focus();
+                });
+        
+                // result_animation_tag.innerHTML = '<img src="/static/images/progress.gif" style="width: 15%; margin-top: 0px;">';
+
+              }
+
+            });
+            
+
+            // 수정 처리
+            btn_save_tag.addEventListener('click', () => {
+              let replyno = replyno_tag.value;
+              let content = content_tag.value.trim();
+              let memberno = memberno_tag.value;
+              
+              if (content.length == 0) {
+                alert('내용이 없습니다. 내용을 입력해주세요.');
+              } else {
+                fetch("/reply/update", {
+                  "method": "post", 
+                  "headers": {"Content-Type": "application/json"},
+                  body: JSON.stringify({"replyno": replyno, "memberno": memberno, "content": content})
+                })
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data['res'] == 0) {
+                    alert('댓글 수정에 실패 했습니다.\n 잠시후 다시 시도해 주세요(관리자: 02-123-1234)');
+                  } else {
+                    list_by_contentsno_join(); // 목록 출력
+                    content_tag.value='';
+                    content_tag.focus();
+                    btn_visible('default');      
+                  }
+                });
+        
+                // result_animation_tag.innerHTML = '<img src="/static/images/progress.gif" style="width: 15%; margin-top: 0px;">';
+
+              }
+
+            });             
+            
+            list_by_contentsno_join(); // 목록 출력
+          } // window.onload END
+          
+          // 목록 출력
+          // 5건 미만이면 5회 미만 순환, 5건 이상 5회 순환
+          function list_by_contentsno_join() { // 목록 출력
+            let cnt = 0; // 출력 순환 횟수  
+          
+            fetch("/reply/list_by_contentsno_join?contentsno=[[${contentsVO.contentsno}]]", {
+              "method": "get" 
+            })
+            .then((response) => response.json())
+            .then((data) => {
+              reply_data = data['res'];
+              // alert(reply_data.length);
+              // return;
+              if (reply_data.length > 5) {
+                cnt = 5;
+              } else {
+                cnt = reply_data.length;
+              }
+              
+              // console.log('-> cnt: ' + cnt);
+              
+              // alert('res: ' + data['res']);
+              // result_tag.value = data['res'];
+              // result_animation_tag.innerHTML = '';
+              let msg = '';
+              for (let i=0; i < cnt; i++) {
+                // let row = data['res'][i];
+                let row = reply_data[i];
+                msg += "<div id='"+row.replyno+"' style='border-bottom: solid 1px #EEEEEE; margin-bottom: 10px;'>";
+                msg += "<span style='font-weight: bold;'>" + row.id + "</span>";
+                msg += "  " + row.rdate;
+          
+                if ('[[${session.memberno}]]' == row.memberno) { // 글쓴이 일치여부 확인, 본인의 글만 삭제 가능함 ★
+                  msg += " <a href='javascript:reply_update("+row.replyno+")'><img src='/reply/images/update.png' style='width: 16px;'></a>";
+                  msg += " <a href='javascript:reply_delete("+row.replyno+")'><img src='/reply/images/delete.png' style='width: 16px;'></a>";
+                }
+                msg += "  " + "<br>";
+                msg += row.content;
+                msg += "</div>";
+              }
+              
+             document.getElementById("reply_list").innerHTML = msg;               
+              
+            });
+      
+          }
+          
+          // 수정 폼 
+          function reply_update(replyno) {
+            let replyno_tag = document.getElementById('replyno')
+            let memberno_tag = document.getElementById('memberno')
+            let content_tag = document.getElementById('content')
+            
+            // fetch로 데이터 읽어 오기
+            fetch("http://localhost:9091/reply/read?replyno=" + replyno, {
+              "method": "get", 
+              "headers": {"Content-Type": "application/json"},
+              // body: JSON.stringify({"contentsno": "[[${contentsVO.contentsno}]]"})
+            })
+            .then((response) => response.json())
+            .then((data) => {
+              // alert(data['res']['content']);
+              replyno_tag.value = data['res']['replyno'];
+              memberno_tag.value = data['res']['memberno'];
+              content_tag.value = data['res']['content'];
+              content_tag.focus();
+              btn_visible('update');              
+            });
+            
+          }
+          
+          // 삭제 폼 + 삭제 처리
+          function reply_delete(replyno) {
+            let content_tag = document.getElementById('content');
+            
+            // fetch로 데이터 읽어 오기
+            fetch("/reply/read?replyno=" + replyno, {
+              "method": "get", 
+              "headers": {"Content-Type": "application/json"},
+              // body: JSON.stringify({"contentsno": "[[${contentsVO.contentsno}]]"})
+            })
+            .then((response) => response.json())
+            .then((data) => {
+              let sw = confirm("「" + data['res']['content'] + "」 삭제하시려면 확인 버튼을 누르세요. 삭제후 복구 할 수 없습니다." );
+              if (sw == true) {
+                // alert('삭제를 진행합니다.');
+                fetch("http://127.0.0.1:9091/reply/delete", {
+                    "method": "post", 
+                    "headers": {"Content-Type": "application/json"},
+                    body: JSON.stringify({"replyno": replyno, "memberno": data['res']['memberno']})
+                })
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data['res'] == 1) {
+                    list_by_contentsno_join(); // 목록 출력
+                    content_tag.value='';
+                    content_tag.focus();
+                    alert('댓글을 삭제했습니다.');
+                  } else {
+                    alert('댓글 삭제에 실패했습니다. 잠시후 다시 시도해주세요.');
+                  }
+                });
+              } else {
+                alert('삭제를 취소 했습니다.');
+              }
+            });
+          }
+          
+          // 버튼 출력
+          function btn_visible(sw) {
+            let btn_create =document.getElementById("btn_create");
+            let btn_save =document.getElementById("btn_save");
+            let btn_cancel =document.getElementById("btn_cancel");
+            
+            if (sw == 'update') {
+              btn_create.style.display='none'; // hidden
+              btn_save.style.display=''; // show
+              btn_cancel.style.display='';
+            } else if (sw == 'default') {
+              btn_create.style.display=''; 
+              btn_save.style.display='none';
+              btn_cancel.style.display='none';
+            }
+            
+          }
+        </script>
+        
+        <div style='width: 100%; margin: 0px auto; clear: both;'>
+            <form name='frm_reply' id='frm_reply'> 
+                <input type='hidden' name='memberno' id='memberno' value=''>
+                <input type='hidden' name='replyno' id='replyno' value=''>
+      
+                <textarea name='content' id='content' class="form-control" style='width: 100%; height: 60px;' 
+                               placeholder="댓글 작성, 로그인해야 등록 할 수 있습니다." autofocus='autofocus'></textarea>
+               <div style='text-align: center;'> 
+                 <button type='button' id='btn_create'>  등  록  </button>
+                 <button type='button' id='btn_save' style='display: none;'>  저  장  </button>
+                 <button type='button' id='btn_delete' style='display: none;'>  삭  제  </button>
+                 <button type='button' id='btn_cancel' style='display: none;'>  취  소  </button>
+               </div>               
+            </form>
+            <div id='reply_list' data-replypage='1'>  <!-- 목록 -->
+              등록된 댓글이 없습니다.
+            </div>
+            <div id='reply_list_btn' style='border: none'>
+                <button type='button' id='btn_add' style='width: 100%;'>더보기 ▽</button>
+            </div>  
+          
+        </div>
+        
+        <!-- ------------------------------ 댓글 영역 종료 ------------------------------  -->
+      </li>   
+    </ul>
+  </fieldset>
+
+</div>
+
+</html>
+

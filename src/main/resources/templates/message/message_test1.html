@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+
+<html layout:decorate="~{layout}"> <!-- layout.html 상속-->
+<div layout:fragment="content">
+
+
+
+  <script>
+    window.onload = () => {
+      let send_tag = document.getElementById('send');
+      let content_tag = document.getElementById('content');
+      let chat_box_tag = document.getElementById('chat_box');
+
+      function handleData(type, content, color) {
+      // 메시지 엘리먼트 생성
+        const messageContainer = document.createElement('div');
+        messageContainer.style.margin = '10px 0';
+        messageContainer.style.clear = 'both';
+
+        const label = document.createElement('div');
+        label.innerText = type === 'system' ? 'system' : 'user'; // type에 따라 구분
+        label.style.fontSize = '12px';
+        label.style.color = '#888';
+        label.style.marginBottom = '2px';
+        label.style.textAlign = type === 'system' ? 'left' : 'right';
+
+        const messageBubble = document.createElement('div');
+        messageBubble.innerText = content;
+        messageBubble.style.background = color; // 연녹색 (카카오톡 스타일)
+        messageBubble.style.padding = '8px 12px';
+        messageBubble.style.margin = '5px 0';
+        messageBubble.style.borderRadius = '10px';
+        messageBubble.style.maxWidth = '80%';
+        messageBubble.style.alignSelf = 'flex-start';
+
+        // flex container 스타일 적용
+        messageBubble.style.display = 'inline-block';
+        messageBubble.style.clear = 'both';
+        messageBubble.style.float = type === 'system' ? 'left' : 'right';
+
+        // messageContainer에 레이블과 메시지 추가
+        messageContainer.appendChild(label);
+        messageContainer.appendChild(messageBubble);
+        // 채팅 박스에 추가
+        chat_box_tag.appendChild(messageContainer);
+        // 자동 스크롤
+        chat_box_tag.scrollTop = chat_box_tag.scrollHeight;
+      }
+
+      function user_message(content) {
+        handleData("user", content, "#DCF8C6");
+      }
+
+      function system_message(content) {
+        handleData("system", content, "#c4c2c2");
+      }
+      
+      //메세지 전송 누를 시 스프링으로 전달
+      send_tag.addEventListener("click", async function () {
+        let content = content_tag.value;
+        user_message(content);
+
+        fetch("/fit4u/send_message", {
+          method: "post",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({content})
+        })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("data : " + data["res"]);
+          system_message(data["res"]);
+          
+        })
+
+        
+      });
+
+
+
+
+
+    }
+  </script>
+
+  <textarea id="content" required="required" style="width: 70%" value="내용을 입력하세요"></textarea>
+
+  <button type='button' id='send' style='width: 20%;'>메세지 전송</button>
+
+  <br>
+
+  <div id="chat_box" style="width: 300px; border: 1px solid #ccc; padding: 10px; height: 400px; overflow-y: auto;">
+  <!-- 여기에 메시지가 계속 추가됨 -->
+  </div>
+
+
+</div>
+
+</html>

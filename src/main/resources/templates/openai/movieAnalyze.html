@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+
+<html layout:decorate="~{layout}"> <!-- layout.html 상속-->
+<div layout:fragment="content">
+
+  <style>
+    /* 이미지 기본 CSS */
+    .img {
+      width: 150px;
+      height: 120px;
+    }
+
+    /* 빨간색 포커스 */
+    .selected {
+      border: 3px solid #770000;
+    }
+
+    /* 밝게하기 */
+    .brighten {
+      filter: brightness(140%);
+    }
+
+  </style>
+
+  <script>
+
+    window.onload = ()  => {
+      let tags = document.querySelectorAll("[name='recommend']");
+      let send_tag = document.getElementById('send');
+      let processing_tag = document.getElementById('processing');
+      let result_tag =  document.getElementById('result');
+      let result_reason_tag = document.getElementById('result_reason');
+      let sessionId = [[${session.memberno}]];
+
+      send.addEventListener('click', async function() {
+        let values = [];
+
+        for (let i=0; i< tags.length; i++) {
+          let tag = tags[i];
+          let pick = tag.getAttribute("data-value");
+          values.push(pick);
+        }
+
+        let check_one = [];
+
+        for(let i=0; i<values.length;i++) {
+          if (values[i] == 1 ) {
+            check_one.push(values.indexOf(i));
+          }
+        }
+
+
+        if(check_one.length < 5 ) {
+          result_tag.innerHTML = "사진을 5개 보다 부족하게 골랐습니다.";
+          result_reason_tag.innerHTML = "";
+          return;
+        }
+
+        else if(check_one.length> 5 ) {
+          result_tag.innerHTML = "사진을 5개를 초과하여 골랐습니다.";
+          result_reason_tag.innerHTML = "";
+          return;
+        }
+
+        else {
+
+          let movie = values.join(",");
+
+
+
+          fetch("/openai/analyzemovie", {
+            method:'post',
+            "headers" : {
+              "Content-Type" : "application/json"
+            },
+            body: JSON.stringify({movie})
+            })
+          .then((responce) => responce.json())
+          .then((data) => {
+            console.log("res data => " + data['res']);
+            result_tag.innerHTML = data['res'];
+            processing_tag.innerHTML = "";
+          });
+
+          processing_tag.innerHTML="<img src='/images/progress.gif' style='width: 5%;'>"; 
+        }
+
+      })
+
+    }
+
+    function applyCSS(event) {
+
+      const img = event.target; //event -> click 을 한 태그
+      img.classList.toggle('selected');
+      img.classList.toggle('brighten');
+
+      let sw = img.getAttribute('data-value');
+      
+      if(sw == 0) {
+        img.setAttribute("data-value", 1);
+      }
+
+      else {
+        img.setAttribute("data-value", 0);
+      }
+
+      fetch
+    }
+
+  </script>
+
+
+<body>
+
+  <div style="width: 90%; margin: 30px auto; text-align: center;">
+
+    
+    <h3>ChatGPT 기반의 영화 장르 분석 시스템</h3>
+    <b>관심있는 이미지를 5개를 선택하세요.</b>
+  </div>
+
+  <div style="width: 90%; margin: 30px auto; text-align: center;">
+
+    <span th:each="filename, iterStat : ${filenames}">
+      <img th:id="${iterStat.index + 1}"
+           name="recommend"
+           th:src="@{/movie/{file}.jpg(file=${filename})}"
+           class="img"
+           onclick="applyCSS(event)"
+           data-value="0">
+    </span>
+
+
+
+      <br><br>
+      <div id="result"></div> <br>
+      <div id="result_reason"> </div>
+      <br>
+      <button type="button" id="send" class="btn btn-info btn-sm">추천 받기 </button> 
+      <span id="processing"></span> 
+  </div>
+
+</div>
+</html>

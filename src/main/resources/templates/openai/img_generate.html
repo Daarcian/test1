@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout}"> <!-- layout.html 상속-->
+<div layout:fragment="content">
+
+  <script>
+    window.onload = () => {
+      send.addEventListener("click", async function () {
+        let prompt = document.getElementById("prompt").value;
+        // alert(prompt);
+        // return;
+
+        let panel = document.getElementById("panel");
+        panel.innerHTML = '<img src="/images/progress.gif" style="width: 5%; margin-top: 20px;">'; 
+        panel.style.display = "block"; // 태그 출력
+
+        let result = document.getElementById("result");
+        // result.style.display = "none";  // 태그 감추기
+
+        await fetch("/openai/img_generate", {
+            "method": "post",
+            "headers": {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({prompt}) // 보내는 데이터, {"prompt":prompt}, object -> json
+        })
+        .then((response) => response.json())
+        .then((data) => { // OpenAI에서 생성된 이미지 출력
+          result.innerHTML = `<img src="/storage/${data['file_name']}" style="width: 100%;">`;
+          console.log(result.innerHTML);
+          panel.style.display = "none"; // 진행 animation 숨기기
+        });
+      });
+
+      // 내용 삭제
+      clear.addEventListener("click", function () {
+        let prompt = document.getElementById("prompt");
+        prompt.value="";
+        prompt.focus();
+      });
+    }
+
+  </script>
+
+
+
+<body>
+  <div style="margin: 10px auto; width: 90%;">
+    <h4>나의 이미지 생성하기(AI 서비스)</h4>
+    <textarea id="prompt" name="prompt" style="width: 100%; height: 200px;">
+      아래의 규칙에 맞는 이미지를 생성해줘.
+
+1. 국가: 한국
+2. 계절: 봄
+3. 상황: 바다가 내려다 보이는 캠핑장
+    
+    </textarea>  <br />
+  
+    <div style="margin-top: 10px auto; width: 100%; text-align: center;">
+      <button id="send" class="btn btn-info btn-sm">이미지 생성하기</button> 
+      <button id="clear" class="btn btn-info btn-sm">입력 내용 삭제하기</button> <br />
+    </div>
+    <div id="panel" style="margin-top: 10px; width: 100%; height: 50px; text-align: center; display: none;"></div>
+    <div id="result" style="margin: 10px auto; width: 40%; text-align: center;"></div>
+
+  </div>
+
+</body>
+</html>

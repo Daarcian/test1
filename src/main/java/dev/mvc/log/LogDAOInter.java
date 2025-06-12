@@ -1,0 +1,9 @@
+package dev.mvc.log;
+
+public interface LogDAOInter {
+  
+  public void LoggedIn(LoginLogVO loginlogVO);
+  
+  public int LoggedOut(int login_log_id);
+
+}
