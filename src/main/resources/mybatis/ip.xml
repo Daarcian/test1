@@ -14,9 +14,62 @@ INSERT INTO JOIN_IP ( ip_id, ip_address, ip_country_name, ip_country_code,
                              SYSDATE, SYSDATE)
   </insert>
   
+  <!-- JOIN_IP 테이블에서 아이피 들어온 아이피 조회(기존에 들어왔었는지 확인) 1번 실행 -->
+  <select id="check_ip_exists" resultType="int" parameterType = "String">
+    SELECT count(*)
+    FROM JOIN_IP
+    WHERE ip_address = #{ip_address}
+  </select>
+  
+  <!-- JOIN_IP 아이피가 block 처리 되어 있는 확인 2번 실행 ip_is_block ==> (Y/N)-->
+  <select id="ip_is_block" resultType="String" parameterType = "int">
+    SELECT ip_is_block
+    FROM JOIN_IP
+    WHERE ip_id = #{ip_id}
+  </select>
+  
+   <select id="ip_address_to_ip_id" resultType="int" parameterType= "String">
+    SELECT ip_id
+    FROM JOIN_IP
+    WHERE ip_address = #{ip_address}
+  </select>
+  
+  <update id="update_ip_enable_to_blocked" parameterType= "int">
+    UPDATE JOIN_IP 
+    SET ip_is_block = 'Y' , ip_mdate = SYSDATE
+    WHERE ip_id = #{ip_id}
+  </update>
+  
+  <!-- JOIN_IP 아이피가 block 처리 되어 있는 확인 2번 실행 ip_is_block ==> (Y/N)-->
+  <insert id="ip_connect_log_create" parameterType="dev.mvc.ip.IpConnectVO">
+     INSERT INTO ip_connect_log (ip_connect_id,              ip_id,            ip_connect_rdate, ip_is_connected , ip_connect_fail) 
+                      VALUES (ip_connect_log_seq.NEXTVAL,  #{ip_id},           SYSDATE,           #{ip_is_connected} , #{ip_connect_fail})
+  </insert>
   
   
-       
+  <select id="count_ip_connect_in_limit_time" parameterType="HashMap">
+    SELECT COUNT(*)
+    FROM ip_connect_log
+    WHERE ip_id = #{ip_id}
+      AND ip_connect_rdate >= SYSDATE - (#{limit_time}/1440)
+   </select>
+   
+   
+   <!-- 유저 접속 테이블에 기록이 있는지(인증 되었는지) 확인  -->
+   <select id="check_member_connect_exists" resultType="int" parameterType= "HashMap">
+    SELECT count(*)
+    FROM member_connect
+    WHERE member_uuid = #{member_connect_id},  ip_id = #{ip_id}
+  </select>
+   
+   <!-- 이메일 인증 통과 시 해당 아이피와 아이디를 유저 접속 테이블에 삽입  -->
+   <insert id="create_member_connect" parameterType="dev.mvc.ip.MemberConnectVO">
+    INSERT INTO member_connect (member_connect_id, member_uuid, ip_id, connection_date, cerification, member_connect_status) 
+                               VALUES  (member_connect_seq.NEXTVAL, #{member_uuid}, #{ip_id}, SYSDATE, #{cerification}, #{member_connect_status})    
+   </insert>
+  
+  
+  
 </mapper>
 
 

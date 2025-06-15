@@ -412,8 +412,12 @@ public class MemberCont {
       request.getSession().setAttribute("clientIp", clientIp);
       String ip = (String) request.getSession().getAttribute("clientIp");
       
+      System.out.println("ip : " + ip);
+      
       ipProc.getIpInfo(ip);
       ipProc.when_ip_joinned(ip);
+      
+      
 
       LoginLogVO loginlogVO = new LoginLogVO();
       loginlogVO.setMemberno(memverVO.getMemberno());
