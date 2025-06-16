@@ -38,6 +38,15 @@ public class Tool {
   /** 패스워드 실패 */
   public static final String PASSWORD_FAIL = "password_fail";
   
+  /** 아이피 블락 시 로그인 */
+  public static final String IP_BLOCK = "ip_block";
+  
+  /** 이메일 필요 */
+  public static final String NEED_EMAIL = "need_email";
+  
+  /** 이메일 인증 완료 */
+  public static final String EMAIL_DONE = "email_done";
+  
   
   /**
    * FileUpload 1.2, 1.3 한글 변환

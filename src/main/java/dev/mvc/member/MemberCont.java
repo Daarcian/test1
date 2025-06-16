@@ -22,6 +22,7 @@ import dev.mvc.ip.IpProcInter;
 import dev.mvc.ip.IpVO;
 import dev.mvc.log.LogProcInter;
 import dev.mvc.log.LoginLogVO;
+import dev.mvc.tool.Tool;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -33,7 +34,7 @@ public class MemberCont {
   @Autowired
   @Qualifier("dev.mvc.member.MemberProc") // @Service("dev.mvc.member.MemberProc")
   private MemberProcInter memberProc;
-  
+
   @Autowired
   @Qualifier("dev.mvc.ip.IpProc") // @Service("dev.mvc.member.MemberProc")
   private IpProcInter ipProc;
@@ -45,6 +46,8 @@ public class MemberCont {
   @Autowired
   @Qualifier("dev.mvc.log.LogProc")
   private LogProcInter logProc;
+
+  private static HashMap<String, String> cerification_code_list;
 
   public MemberCont() {
     System.out.println("-> MemberCont created.");
@@ -337,13 +340,39 @@ public class MemberCont {
       @RequestParam(value = "id_save", defaultValue = "") String id_save,
       @RequestParam(value = "passwd_save", defaultValue = "") String passwd_save,
       @RequestParam(value = "url", defaultValue = "") String url) {
+
+    // 아이피 검사
+    String clientIp = getClientIp(request);
+    request.getSession().setAttribute("clientIp", clientIp);
+
+    String ip_check = ipProc.when_ip_joinned(clientIp, id);
+
+    if (ip_check == "BLOCK" || ip_check.equals("BLOCK")) {
+      model.addAttribute("code", Tool.IP_BLOCK);
+      return "member/msg";
+    }
+
+    else if (ip_check == "EMAIL" || ip_check.equals("EMAIL")) {
+      String code = ipProc.send_CerificationEmail_to_member(id);
+
+      session.setAttribute("email_code", code);
+
+      model.addAttribute("id", id);
+      model.addAttribute("passwd", passwd);
+      model.addAttribute("id_save", id_save);
+      model.addAttribute("passwd_save", passwd_save);
+      model.addAttribute("url", url);
+
+      return "member/check_email";
+    }
+
     HashMap<String, Object> map = new HashMap<String, Object>();
     map.put("id", id);
     map.put("passwd", passwd);
 
     int cnt = this.memberProc.login(map);
 
-    if (cnt == 1) {
+    if (cnt == 1 & (ip_check == "PASS" || ip_check.equals("PASS"))) {
       // id를 이용하여 회원 정보 조회
 
       MemberVO memverVO = this.memberProc.readById(id);
@@ -408,32 +437,21 @@ public class MemberCont {
       ck_passwd_save.setMaxAge(60 * 60 * 24 * 30); // 30 day
       response.addCookie(ck_passwd_save);
 
-      String clientIp = getClientIp(request);
-      request.getSession().setAttribute("clientIp", clientIp);
-      String ip = (String) request.getSession().getAttribute("clientIp");
-      
-      System.out.println("ip : " + ip);
-      
-      ipProc.getIpInfo(ip);
-      ipProc.when_ip_joinned(ip);
-      
-      
-
-      LoginLogVO loginlogVO = new LoginLogVO();
-      loginlogVO.setMemberno(memverVO.getMemberno());
-      loginlogVO.setLogin_ip(clientIp);
-
-      System.out.println("로그인 된 세션 아이디 : " + session.getId());
-      HashMap<String, Object> session_map = new HashMap<>();
-      session_map.put("memberno", memverVO.getMemberno());
-      session_map.put("session_id", session.getId());
-      memberProc.session_id_update(session_map);
-
-      // 로그인 시 로그인내역을 확인하기 위함. 현재 로그아웃 시 login_log_id에 로그아웃 date를 업데이트 하기 위해 session에
-      // login_log_id을 저장.
-      logProc.LoggedIn(loginlogVO);
-      int login_log_id = loginlogVO.getLogin_log_id();
-      session.setAttribute("login_log_id", login_log_id);
+//      LoginLogVO loginlogVO = new LoginLogVO();
+//      loginlogVO.setMemberno(memverVO.getMemberno());
+//      loginlogVO.setLogin_ip(clientIp);
+//
+//      System.out.println("로그인 된 세션 아이디 : " + session.getId());
+//      HashMap<String, Object> session_map = new HashMap<>();
+//      session_map.put("memberno", memverVO.getMemberno());
+//      session_map.put("session_id", session.getId());
+//      memberProc.session_id_update(session_map);
+//
+//      // 로그인 시 로그인내역을 확인하기 위함. 현재 로그아웃 시 login_log_id에 로그아웃 date를 업데이트 하기 위해 session에
+//      // login_log_id을 저장.
+//      logProc.LoggedIn(loginlogVO);
+//      int login_log_id = loginlogVO.getLogin_log_id();
+//      session.setAttribute("login_log_id", login_log_id);
 
       if (url.length() > 0) { // 접속 요청이 있었는지 확인
         return "redirect:" + url; // redirect:/member/login_cookie_need?url=/cate/list_search
@@ -612,6 +630,39 @@ public class MemberCont {
     model.addAttribute("url", url);
 
     return "member/login_cookie_need"; // templates/member/login_cookie_need.html
+  }
+
+  @PostMapping(value = "send_cerification_code")
+  @ResponseBody
+  public String send_cerification_code(@RequestBody String json_src) {
+    JSONObject obj = new JSONObject(json_src);
+
+    String code = ipProc.send_CerificationEmail_to_member((String) obj.get("member_email"));
+
+    cerification_code_list.put((String) obj.get("member_email"), code);
+
+    obj.put("code", code);
+
+    return obj.toString();
+  }
+
+  @PostMapping(value = "email_to_login")
+  public String check_cerification_code(HttpSession session, Model model, 
+      @RequestParam(value = "id", defaultValue = "") String id,
+      @RequestParam(value = "passwd", defaultValue = "") String passwd,
+      @RequestParam(value = "id_save", defaultValue = "") String id_save,
+      @RequestParam(value = "passwd_save", defaultValue = "") String passwd_save,
+      @RequestParam(value = "url", defaultValue = "") String url,
+      @RequestParam(value = "code", defaultValue = "") String code) {
+
+    if (code == session.getAttribute("email_code") || code.equals((String) session.getAttribute("email_code"))) {
+      ipProc.create_member_connect(id, "121.78.128.113", "이메일", "active");
+      model.addAttribute("code", Tool.EMAIL_DONE);
+      return "member/msg";
+    }
+    
+    model.addAttribute("code", Tool.NEED_EMAIL);
+    return "member/msg";
   }
 
   public String getClientIp(HttpServletRequest request) {

@@ -15,7 +15,7 @@ public class MemberConnectVO {
   
   private String connection_date;
   
-  private String cerification;
+  private String certification;
   
   private String member_connect_status;
 

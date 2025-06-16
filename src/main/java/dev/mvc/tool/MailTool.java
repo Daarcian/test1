@@ -36,7 +36,7 @@ public class MailTool {
       Session session = Session.getInstance(props, new javax.mail.Authenticator() {
           protected PasswordAuthentication getPasswordAuthentication() {
               String user="friziae2000@gmail.com";
-              String password="yvop wrpt ytzz ixei";
+              String password="1234";
               return new PasswordAuthentication(user, password);
           }
       });

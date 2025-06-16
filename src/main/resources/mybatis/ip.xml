@@ -55,18 +55,39 @@ INSERT INTO JOIN_IP ( ip_id, ip_address, ip_country_name, ip_country_code,
    </select>
    
    
+   
    <!-- 유저 접속 테이블에 기록이 있는지(인증 되었는지) 확인  -->
    <select id="check_member_connect_exists" resultType="int" parameterType= "HashMap">
     SELECT count(*)
     FROM member_connect
-    WHERE member_uuid = #{member_connect_id},  ip_id = #{ip_id}
+    WHERE member_uuid = #{member_uuid} AND  ip_id = #{ip_id}
   </select>
    
    <!-- 이메일 인증 통과 시 해당 아이피와 아이디를 유저 접속 테이블에 삽입  -->
    <insert id="create_member_connect" parameterType="dev.mvc.ip.MemberConnectVO">
-    INSERT INTO member_connect (member_connect_id, member_uuid, ip_id, connection_date, cerification, member_connect_status) 
-                               VALUES  (member_connect_seq.NEXTVAL, #{member_uuid}, #{ip_id}, SYSDATE, #{cerification}, #{member_connect_status})    
+    INSERT INTO member_connect (member_connect_id, member_uuid, ip_id, connection_date, certification, member_connect_status) 
+                               VALUES  (member_connect_seq.NEXTVAL, #{member_uuid}, #{ip_id}, SYSDATE, #{certification}, #{member_connect_status})    
    </insert>
+   
+   <!-- 로그인 아이디로 uuid를 가져옴  -->
+  <select id="member_id_to_member_uuid" resultType="int" parameterType="String">
+    SELECT memberno
+    FROM member
+    WHERE id = #{member_id}
+  </select>
+  
+  
+  
+  <!-- JOIN_IP(IP테이블) 리스트 조회 -->
+  <select id = "list_all_JOIN_IP" resultType = "dev.mvc.ip.IpVO">
+    SELECT   ip_id, ip_address, ip_country_name, ip_country_code,
+               ip_region_name, ip_region_code, ip_city_name, ip_isp,
+               ip_rdate, ip_mdate
+               
+    FROM JOIN_IP
+    ORDER BY DESC 
+  </select>
+  
   
   
   

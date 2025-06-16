@@ -21,5 +21,7 @@ public interface IpDAOInter {
   public int create_member_connect(MemberConnectVO memberconnectVO);
   
   public int check_member_connect_exists(HashMap<String, Object> map);
+  
+  public int member_id_to_member_uuid(String member_id);
 
 }
