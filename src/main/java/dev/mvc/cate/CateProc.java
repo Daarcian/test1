@@ -126,19 +126,6 @@ public class CateProc implements CateProcInter {
    * @return
    */
   public ArrayList<CateVO> list_search_paging(String word, int now_page, int record_per_page) {
-    /*
-     페이지당 10개의 레코드 출력
-     1 page: WHERE r >= 1 AND r <= 10
-     2 page: WHERE r >= 11 AND r <= 20
-     3 page: WHERE r >= 21 AND r <= 30
-     
-     now_page 1: WHERE r >= 1 AND r <= 10
-     now_page 2: WHERE r >= 11 AND r <= 20
-     now_page 3: WHERE r >= 21 AND r <= 30
-     
-     int start_num = (now_page - 1) * record_per_page;
-     int end_num=start_num + record_per_page;
-     */
 
     int start_num = ((now_page - 1) * record_per_page) + 1;
     int end_num=(start_num + record_per_page) - 1;

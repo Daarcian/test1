@@ -1,6 +1,8 @@
 package dev.mvc.ip;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public interface IpDAOInter {
   
@@ -23,5 +25,9 @@ public interface IpDAOInter {
   public int check_member_connect_exists(HashMap<String, Object> map);
   
   public int member_id_to_member_uuid(String member_id);
+  
+  public ArrayList<IpVO> ip_search_paging(Map map);
+  
+  public int count_JOIN_IP_RECORD(Map map);
 
 }

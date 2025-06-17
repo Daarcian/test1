@@ -1,0 +1,45 @@
+
+<div th:fragment="JOIN_IP_list_all_fragment"> 
+  <table class="table table-hover" style="width: 100%;">
+  <colgroup>
+    <col style='width: 5%;'/>     <!-- 순번 -->
+    <col style='width: 15%;'/>    <!-- IP 주소 -->
+    <col style='width: 10%;'/>    <!-- 국가 코드 -->
+    <col style='width: 15%;'/>    <!-- 국가명 -->
+    <col style='width: 15%;'/>    <!-- 지역명 -->
+    <col style='width: 10%;'/>    <!-- 도시명 -->
+    <col style='width: 15%;'/>    <!-- ISP -->
+    <col style='width: 15%;'/>    <!-- 등록일 -->
+  </colgroup>
+  <thead>
+    <tr>
+      <th class="th_bs">순서</th>
+      <th class="th_bs">IP 주소</th>
+      <th class="th_bs">국가 코드</th>
+      <th class="th_bs">국가명</th>
+      <th class="th_bs">지역명</th>
+      <th class="th_bs">도시명</th>
+      <th class="th_bs">ISP</th>
+      <th class="th_bs">등록일</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr th:each="ipVO, status : ${list}">
+      <td class="td_bs" th:text="${no - status.index}"></td> 
+      <td class="td_bs" th:text="${ipVO.ip_address}"></td>
+      <td class="td_bs" th:text="${ipVO.ip_country_code}"></td>
+      <td class="td_bs" th:text="${ipVO.ip_country_name}"></td>
+      <td class="td_bs" th:text="${ipVO.ip_region_name}"></td>
+      <td class="td_bs" th:text="${ipVO.ip_city_name}"></td>
+      <td class="td_bs" th:text="${ipVO.ip_isp}"></td>
+      <td class="td_bs" th:text="${ipVO.ip_rdate}"></td>
+    </tr>
+  </tbody>
+</table>
+
+  
+  <!-- 페이지 버튼 목록 출력 시작 -->
+  <div class="Bottom_menu" th:utext="${paging}"></div> 
+  <!-- 페이지 버튼 목록 출력 종료 -->
+</div>
+

@@ -1,0 +1,30 @@
+<div th:fragment="list_search_fragment"> <!-- <div th:replace=... -->
+  <div style="text-align: right; clear: both;">
+  <form name="frm_search" method="get" action="/ip/list_search">
+    <!-- 수정 필요 -->
+    <input type="text" name="word" id="word" th:value="${word}" />
+    <input type="text" name="ip_address" id="ip_address" th:value="${ip_address}" />
+    <input type="text" name="ip_country_name" id="ip_country_name" th:value="${ip_country_name}" />
+    <input type="text" name="ip_country_code" id="ip_country_code" th:value="${ip_country_code}" />
+    <input type="text" name="ip_region_name" id="ip_region_name" th:value="${ip_region_name}" />
+    <input type="text" name="ip_region_code" id="ip_region_code" th:value="${ip_region_code}" />
+    <input type="text" name="ip_city_name" id="ip_city_name" th:value="${ip_city_name}" />
+    <input type="text" name="ip_isp" id="ip_isp" th:value="${ip_isp}" />
+    <input type="text" name="ip_is_block" id="ip_is_block" th:value="${ip_is_block}" />
+    <input type="text" name="ip_is_mobile" id="ip_is_mobile" th:value="${ip_is_mobile}" />
+    <input type="text" name="rdate_start" id="rdate_start" th:value="${rdate_start}" />
+    <input type="text" name="rdate_end" id="rdate_end" th:value="${rdate_end}" />
+    <input type="text" name="mdate_start" id="mdate_start" th:value="${mdate_start}" />
+    <input type="text" name="mdate_end" id="mdate_end" th:value="${mdate_end}" />
+
+   
+    <button type='submit' class='btn btn-secondary btn-sm'
+            style="padding: 2px 8px 3px 8px; margin: 0px 0px 2px 0px;">검색</button>
+    <span th:if="${word != null and word != ''}">
+      <button type='button' class='btn btn-secondary btn-sm'
+              style="padding: 2px 8px 3px 8px; margin: 0px 0px 2px 0px;"
+              th:onclick="location.href='/ip/list_search'">검색 취소</button>
+    </span>                    
+  </form>
+</div>
+</div>

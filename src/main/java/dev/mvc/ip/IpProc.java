@@ -1,5 +1,6 @@
 package dev.mvc.ip;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+
+import dev.mvc.cate.CateVO;
 
 @Component("dev.mvc.ip.IpProc")
 public class IpProc implements IpProcInter {
@@ -165,7 +168,7 @@ public class IpProc implements IpProcInter {
   /**
    * 인증 이메일 전송
    */
-  
+
   @Override
   public String send_CerificationEmail_to_member(String member_email) {
     String code = emailCerification.generateAuthCode();
@@ -208,4 +211,94 @@ public class IpProc implements IpProcInter {
     int cnt = this.ipDAO.create_member_connect(memberConnectVO);
     return cnt;
   }
+
+  @Override
+  public ArrayList<IpVO> ip_search_paging(String word, Map map, int now_page, int record_per_page) {
+    
+    int start_num = ((now_page - 1) * record_per_page) + 1;
+    int end_num = (start_num + record_per_page) - 1;
+    
+    map.put("word", word);
+    map.put("start_num", start_num);
+    map.put("end_num", end_num);
+    
+
+    ArrayList<IpVO> list = this.ipDAO.ip_search_paging(map);
+
+    return list;
+  }
+
+  @Override
+  public String pagingBox(int now_page, Map map, String list_url, int search_count, int record_per_page,
+      int page_per_block) {
+    
+    String params = 
+        "&word=" + map.get("word") +
+        "&ip_address=" + map.get("ip_address") +
+        "&ip_country_name=" + map.get("ip_country_name") +
+        "&ip_country_code=" + map.get("ip_country_code") +
+        "&ip_region_name=" + map.get("ip_region_name") +
+        "&ip_region_code=" + map.get("ip_region_code") +
+        "&ip_city_name=" + map.get("ip_city_name") +
+        "&ip_isp=" + map.get("ip_isp") +
+        "&ip_is_block=" + map.get("ip_is_block") +
+        "&ip_is_mobile=" + map.get("ip_is_mobile") +
+        "&rdate_start=" + map.get("rdate_start") +
+        "&rdate_end=" + map.get("rdate_end") +
+        "&mdate_start=" + map.get("mdate_start") +
+        "&mdate_end=" + map.get("mdate_end");
+    
+    int total_page = (int) (Math.ceil((double) search_count / record_per_page));
+
+    int total_grp = (int) (Math.ceil((double) total_page / page_per_block));
+
+    int now_grp = (int) (Math.ceil((double) now_page / page_per_block));
+
+    int start_page = ((now_grp - 1) * page_per_block) + 1; // 특정 그룹의 시작 페이지
+    int end_page = (now_grp * page_per_block); // 특정 그룹의 마지막 페이지
+
+    StringBuffer str = new StringBuffer(); // String class 보다 문자열 추가등의 편집시 속도가 빠름
+    str.append("<div id='paging'>");
+
+    int _now_page = (now_grp - 1) * page_per_block;
+    if (now_grp >= 2) { // 현재 그룹번호가 2이상이면 페이지수가 11페이지 이상임으로 이전 그룹으로 갈수 있는 링크 생성
+      str.append("<span class='span_box_1'><a href='" + list_url + "?" + params + "&now_page=" + _now_page
+          + "'>이전</a></span>");
+    }
+
+    for (int i = start_page; i <= end_page; i++) {
+      if (i > total_page) { // 마지막 페이지를 넘어갔다면 페이 출력 종료
+        break;
+      }
+
+      if (now_page == i) { // 목록에 출력하는 페이지가 현재페이지와 같다면 CSS 강조(차별을 둠)
+        str.append("<span class='span_box_2'>" + i + "</span>"); // 현재 페이지, 강조
+      } else {
+
+        str.append("<span class='span_box_1'><a href='" + list_url + "?" + params + "&now_page=" + i + "'>" + i
+            + "</a></span>");
+      }
+    }
+
+    if (now_grp < total_grp) {
+      str.append("<span class='span_box_1'><a href='" + list_url + "?" + params + "&now_page=" + _now_page
+          + "'>다음</a></span>");
+    }
+    str.append("</div>");
+
+    return str.toString();
+  }
+
+  @Override
+  public int count_JOIN_IP_RECORD(Map map) {
+    /**
+     * @Author : soldesk
+     * @Date : 2025. 6. 17.
+     * @Method : count_JOIN_IP_RECORD
+     * @return : return 0;
+     */
+    int cnt = this.ipDAO.count_JOIN_IP_RECORD(map);
+    return cnt;
+  }
+
 }

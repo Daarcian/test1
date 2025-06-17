@@ -76,8 +76,6 @@ INSERT INTO JOIN_IP ( ip_id, ip_address, ip_country_name, ip_country_code,
     WHERE id = #{member_id}
   </select>
   
-  
-  
   <!-- JOIN_IP(IP테이블) 리스트 조회 -->
   <select id = "list_all_JOIN_IP" resultType = "dev.mvc.ip.IpVO">
     SELECT   ip_id, ip_address, ip_country_name, ip_country_code,
@@ -87,6 +85,134 @@ INSERT INTO JOIN_IP ( ip_id, ip_address, ip_country_name, ip_country_code,
     FROM JOIN_IP
     ORDER BY DESC 
   </select>
+  
+  <!-- 검색으로 ip 테이블 조회  -->
+  <select id="ip_search_paging" resultType="dev.mvc.ip.IpVO" parameterType="Map">
+  SELECT ip_id, ip_address, ip_country_name, ip_country_code,
+         ip_region_name, ip_region_code, ip_city_name, ip_isp,
+         ip_rdate, ip_mdate, r
+  FROM (
+    SELECT ip_id, ip_address, ip_country_name, ip_country_code,
+           ip_region_name, ip_region_code, ip_city_name, ip_isp,
+           ip_rdate, ip_mdate, ROWNUM AS r
+    FROM (
+      SELECT ip_id, ip_address, ip_country_name, ip_country_code,
+             ip_region_name, ip_region_code, ip_city_name, ip_isp,
+             ip_rdate, ip_mdate
+      FROM JOIN_IP
+      <where>
+        <!-- 전체 검색어: 모든 컬럼에 대해 OR 조건 -->
+        <if test="word != null and word != ''">
+          (
+            UPPER(ip_address) LIKE '%' || UPPER(#{word}) || '%' OR
+            UPPER(ip_country_name) LIKE '%' || UPPER(#{word}) || '%' OR
+            UPPER(ip_country_code) LIKE '%' || UPPER(#{word}) || '%' OR
+            UPPER(ip_region_name) LIKE '%' || UPPER(#{word}) || '%' OR
+            UPPER(ip_region_code) LIKE '%' || UPPER(#{word}) || '%' OR
+            UPPER(ip_city_name) LIKE '%' || UPPER(#{word}) || '%' OR
+            UPPER(ip_isp) LIKE '%' || UPPER(#{word}) || '%'
+          )
+        </if>
+
+        <!-- 개별 조건 검색 -->
+        <if test="ip_address != null and ip_address != ''">
+          AND UPPER(ip_address) LIKE '%' || UPPER(#{ip_address}) || '%'
+        </if>
+        <if test="ip_country_name != null and ip_country_name != ''">
+          AND UPPER(ip_country_name) LIKE '%' || UPPER(#{ip_country_name}) || '%'
+        </if>
+        <if test="ip_country_code != null and ip_country_code != ''">
+          AND UPPER(ip_country_code) LIKE '%' || UPPER(#{ip_country_code}) || '%'
+        </if>
+        <if test="ip_region_name != null and ip_region_name != ''">
+          AND UPPER(ip_region_name) LIKE '%' || UPPER(#{ip_region_name}) || '%'
+        </if>
+        <if test="ip_region_code != null and ip_region_code != ''">
+          AND UPPER(ip_region_code) LIKE '%' || UPPER(#{ip_region_code}) || '%'
+        </if>
+        <if test="ip_city_name != null and ip_city_name != ''">
+          AND UPPER(ip_city_name) LIKE '%' || UPPER(#{ip_city_name}) || '%'
+        </if>
+        <if test="ip_isp != null and ip_isp != ''">
+          AND UPPER(ip_isp) LIKE '%' || UPPER(#{ip_isp}) || '%'
+        </if>
+
+        <!-- 날짜 범위 조건 -->
+        <if test="rdate_start != null and rdate_start != ''">
+          AND ip_rdate &gt;= TO_DATE(#{rdate_start}, 'YYYY-MM-DD')
+        </if>
+        <if test="rdate_end != null and rdate_end != ''">
+          AND ip_rdate &lt;= TO_DATE(#{rdate_end}, 'YYYY-MM-DD')
+        </if>
+        <if test="mdate_start != null and mdate_start != ''">
+          AND ip_mdate &gt;= TO_DATE(#{mdate_start}, 'YYYY-MM-DD')
+        </if>
+        <if test="mdate_end != null and mdate_end != ''">
+          AND ip_mdate &lt;= TO_DATE(#{mdate_end}, 'YYYY-MM-DD')
+        </if>
+      </where>
+      ORDER BY ip_id ASC
+    )
+  )
+  WHERE r &gt;= #{start_num} AND r &lt;= #{end_num}
+</select>
+
+<select id="count_JOIN_IP_RECORD" resultType = "int" parameterType = "Map">
+  SELECT COUNT(*)
+  FROM JOIN_IP
+        <where>
+          <if test="word != null and word != ''">
+          (
+            UPPER(ip_address) LIKE '%' || UPPER(#{word}) || '%' OR
+            UPPER(ip_country_name) LIKE '%' || UPPER(#{word}) || '%' OR
+            UPPER(ip_country_code) LIKE '%' || UPPER(#{word}) || '%' OR
+            UPPER(ip_region_name) LIKE '%' || UPPER(#{word}) || '%' OR
+            UPPER(ip_region_code) LIKE '%' || UPPER(#{word}) || '%' OR
+            UPPER(ip_city_name) LIKE '%' || UPPER(#{word}) || '%' OR
+            UPPER(ip_isp) LIKE '%' || UPPER(#{word}) || '%'
+          )
+        </if>
+
+        <!-- 개별 조건 검색 -->
+        <if test="ip_address != null and ip_address != ''">
+          AND UPPER(ip_address) LIKE '%' || UPPER(#{ip_address}) || '%'
+        </if>
+        <if test="ip_country_name != null and ip_country_name != ''">
+          AND UPPER(ip_country_name) LIKE '%' || UPPER(#{ip_country_name}) || '%'
+        </if>
+        <if test="ip_country_code != null and ip_country_code != ''">
+          AND UPPER(ip_country_code) LIKE '%' || UPPER(#{ip_country_code}) || '%'
+        </if>
+        <if test="ip_region_name != null and ip_region_name != ''">
+          AND UPPER(ip_region_name) LIKE '%' || UPPER(#{ip_region_name}) || '%'
+        </if>
+        <if test="ip_region_code != null and ip_region_code != ''">
+          AND UPPER(ip_region_code) LIKE '%' || UPPER(#{ip_region_code}) || '%'
+        </if>
+        <if test="ip_city_name != null and ip_city_name != ''">
+          AND UPPER(ip_city_name) LIKE '%' || UPPER(#{ip_city_name}) || '%'
+        </if>
+        <if test="ip_isp != null and ip_isp != ''">
+          AND UPPER(ip_isp) LIKE '%' || UPPER(#{ip_isp}) || '%'
+        </if>
+
+        <!-- 날짜 범위 조건 -->
+        <if test="rdate_start != null and rdate_start != ''">
+          AND ip_rdate &gt;= TO_DATE(#{rdate_start}, 'YYYY-MM-DD')
+        </if>
+        <if test="rdate_end != null and rdate_end != ''">
+          AND ip_rdate &lt;= TO_DATE(#{rdate_end}, 'YYYY-MM-DD')
+        </if>
+        <if test="mdate_start != null and mdate_start != ''">
+          AND ip_mdate &gt;= TO_DATE(#{mdate_start}, 'YYYY-MM-DD')
+        </if>
+        <if test="mdate_end != null and mdate_end != ''">
+          AND ip_mdate &lt;= TO_DATE(#{mdate_end}, 'YYYY-MM-DD')
+        </if>
+      </where>
+</select>
+
+  
   
   
   
