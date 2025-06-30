@@ -80,11 +80,6 @@ public interface MemberDAOInter {
    */
   public int login(HashMap<String, Object> map);
   
-  public int session_id_update(HashMap<String, Object> map);
-  
-  public int session_id_delete(int memberno); 
-  
-  public String check_session_id(int memberno);
   
   
 }

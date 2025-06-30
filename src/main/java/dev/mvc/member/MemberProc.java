@@ -129,45 +129,8 @@ public class MemberProc implements MemberProcInter {
     
     return cnt;
   }
-
-  @Override
-  public int session_id_update(HashMap<String, Object> map) {
-    /**
-     * @Author : soldesk
-     * @Date : 2025. 6. 10.
-     * @Method : session_id_update
-     * @return : return 0;
-     */
-    int cnt = this.memberDAO.session_id_update(map);
-    
-    return cnt;
-  }
   
-  @Override
-  public int session_id_delete(int memeberno) {
-    /**
-     * @Author : soldesk
-     * @Date : 2025. 6. 10.
-     * @Method : session_id_update
-     * @return : return 0;
-     */
-    int cnt = this.memberDAO.session_id_delete(memeberno);
-    
-    return cnt;
-  }
   
-  @Override
-  public String check_session_id(int memeberno) {
-    /**
-     * @Author : soldesk
-     * @Date : 2025. 6. 10.
-     * @Method : session_id_update
-     * @return : return 0;
-     */
-    String result  = this.memberDAO.check_session_id(memeberno);
-    
-    return result;
-  }
   
 }
 

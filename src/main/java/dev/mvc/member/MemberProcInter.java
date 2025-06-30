@@ -90,11 +90,6 @@ public interface MemberProcInter {
    */
   public boolean isAdmin(HttpSession session);
   
-  public int session_id_update(HashMap<String, Object> map);
-  
-  public int session_id_delete(int memeberno); 
-  
-  public String check_session_id(int memberno);
 }
 
 

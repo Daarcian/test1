@@ -188,7 +188,6 @@ public class CateCont {
                                    @RequestParam(name="word", defaultValue = "") String word,
                                    @RequestParam(name="now_page", defaultValue="1") int now_page) {
     
-    if (this.memberProc.isAdmin(session)) {
       CateVO cateVO = new CateVO(); // form 초기값 전달
       // cateVO.setGenre("분류");
       // cateVO.setName("카테고리 이름을 입력하세요."); // Form으로 초기값을 전달
@@ -230,9 +229,6 @@ public class CateCont {
       // --------------------------------------------------------------------------------------    
       
       return "cate/list_search";  // /templates/cate/list_search.html
-    } else {
-      return "redirect:/member/login_cookie_need?url=/cate/list_search"; // redirect
-    }
     
 
   }  

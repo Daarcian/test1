@@ -11,7 +11,7 @@
   
   <!-- 회원 가입 -->
   <insert id="create" parameterType="dev.mvc.member.MemberVO">
-    INSERT INTO member(memberno, id, passwd, mname, tel, zipcode, address1, address2, mdate, grade)
+    INSERT INTO member(member_uuid, id, passwd, mname, tel, zipcode, address1, address2, mdate, grade)
     VALUES (member_seq.nextval, #{id}, #{passwd}, #{mname}, #{tel}, #{zipcode}, 
                  #{address1}, #{address2}, sysdate, #{grade})
   </insert>
@@ -71,26 +71,6 @@
     WHERE memberno=#{memberno}
   </update>
   
-  <!-- 로그인 시 session id  추가-->
-  <update id="session_id_update" parameterType="HashMap">
-    UPDATE member
-    SET session_id=#{session_id}
-    WHERE memberno=#{memberno}
-  </update>
-  
-  <!-- 로그 아웃 시 session id 삭제 -->
-  <update id="session_id_delete" parameterType="int">
-    UPDATE member
-    SET session_id= 0
-    WHERE memberno=#{memberno}
-  </update>
-  
-  <!-- 로그인 시 session 아이디 확인  -->
-  <select id="check_session_id" resultType="String" parameterType="int">
-    SELECT session_id
-    FROM member
-    WHERE memberno = #{memberno}
-  </select>
   
   
   

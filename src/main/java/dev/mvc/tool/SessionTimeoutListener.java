@@ -22,9 +22,5 @@ public class SessionTimeoutListener implements HttpSessionListener {
         
     }
 
-    @Override
-    public void sessionDestroyed(HttpSessionEvent se) {
-      memberProc.session_id_delete((int)se.getSession().getAttribute("memberno"));
-      System.out.println("세션 만료됨: " + se.getSession().getId());
-    }
+
 }

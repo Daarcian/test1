@@ -437,22 +437,6 @@ public class MemberCont {
       ck_passwd_save.setMaxAge(60 * 60 * 24 * 30); // 30 day
       response.addCookie(ck_passwd_save);
 
-//      LoginLogVO loginlogVO = new LoginLogVO();
-//      loginlogVO.setMemberno(memverVO.getMemberno());
-//      loginlogVO.setLogin_ip(clientIp);
-//
-//      System.out.println("로그인 된 세션 아이디 : " + session.getId());
-//      HashMap<String, Object> session_map = new HashMap<>();
-//      session_map.put("memberno", memverVO.getMemberno());
-//      session_map.put("session_id", session.getId());
-//      memberProc.session_id_update(session_map);
-//
-//      // 로그인 시 로그인내역을 확인하기 위함. 현재 로그아웃 시 login_log_id에 로그아웃 date를 업데이트 하기 위해 session에
-//      // login_log_id을 저장.
-//      logProc.LoggedIn(loginlogVO);
-//      int login_log_id = loginlogVO.getLogin_log_id();
-//      session.setAttribute("login_log_id", login_log_id);
-
       if (url.length() > 0) { // 접속 요청이 있었는지 확인
         return "redirect:" + url; // redirect:/member/login_cookie_need?url=/cate/list_search
       } else {
